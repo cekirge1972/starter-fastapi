@@ -1,35 +1,38 @@
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
-
-from pydantic import BaseModel
 
 app = FastAPI()
+val = None
 
+@app.get("/status")
+async def check():
+    return {"val": val}
 
-class Item(BaseModel):
-    item_id: int
+@app.get("/start")
+async def start():
+    global val
+    val = True
+    return {"Answer": f"Command Sent!"}
 
+@app.get("/reset")
+async def reset():
+    global val
+    val = None
+    return {"Answer": f"Value is now {val}"}
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+@app.get("/stop")
+async def stop():
+    global val
+    val = False
+    return {"Answer": f"Value is now {val}"}
 
+@app.get("/quit")
+async def quit():
+    global val
+    val = "Q"
+    return {"Answer": f"Value is now {val}"}
 
-@app.get('/favicon.ico', include_in_schema=False)
-async def favicon():
-    return FileResponse('favicon.ico')
-
-
-@app.get("/item/{item_id}")
-async def read_item(item_id: int):
-    return {"item_id": item_id}
-
-
-@app.get("/items/")
-async def list_items():
-    return [{"item_id": 1, "name": "Foo"}, {"item_id": 2, "name": "Bar"}]
-
-
-@app.post("/items/")
-async def create_item(item: Item):
-    return item
+if __name__ == "__main__":
+    import uvicorn
+    
+    # Run the FastAPI app using Uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=10000,reload=True)
